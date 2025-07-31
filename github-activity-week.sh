@@ -31,7 +31,7 @@ gh api "search/issues?q=commenter:$USERNAME+created:$MONDAY..$TODAY+org:calcom" 
 echo ""
 
 echo "👀 Reviews Made This Week:"
-gh api "search/issues?q=reviewed-by:$USERNAME+updated:$MONDAY..$TODAY+type:pr+org:calcom" --jq '.items[] | "• " + (.updated_at | split("T")[0]) + " - " + .title + " (" + (.repository_url | split("/") | .[-1]) + ") - " + .html_url'
+gh api "search/issues?q=reviewed-by:$USERNAME+updated:$MONDAY..$TODAY+type:pr+org:calcom+-author:$USERNAME" --jq '.items[] | "• " + (.updated_at | split("T")[0]) + " - " + .title + " (" + (.repository_url | split("/") | .[-1]) + ") - " + .html_url'
 echo ""
 
 echo "🔄 My Issues/PRs With Activity This Week:"
@@ -61,7 +61,7 @@ while true; do
     fi
     
     # Reviews made on this day
-    review_count=$(gh api "search/issues?q=reviewed-by:$USERNAME+updated:$current_date+type:pr+org:calcom" --jq '.total_count')
+    review_count=$(gh api "search/issues?q=reviewed-by:$USERNAME+updated:$current_date+type:pr+org:calcom+-author:$USERNAME" --jq '.total_count')
     if [[ $review_count -gt 0 ]]; then
         echo "  👀 Reviews made: $review_count"
     fi

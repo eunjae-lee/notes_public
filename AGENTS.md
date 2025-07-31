@@ -34,6 +34,7 @@ Weekly notes include:
 - This maintains a clear audit trail while showing progress
 - Use strikethrough (`~~text~~`) for tasks that become irrelevant or are completed by others, rather than checking them off
 - Only check off tasks (`- [x]`) that you personally completed
+- **When updating the status or leaving a log for a task, always add it as an indented sub-item (e.g., `  - waiting for review`), not by editing the main task description.**
 
 ## Usage
 
@@ -56,59 +57,113 @@ Use these commands instead of manual date calculations to ensure consistency acr
 
 ## Agent Commands
 
-### "start a new week"
-When the user says "start a new week":
-1. Create a new weekly note using the template from `.templates/weekly.md`
-2. Name it with the current week number (e.g., `2025-W29.md`)
-3. Update the period dates in the new file (Monday to Friday of that week)
-4. Find the current quarterly note (e.g., `2025-Q3.md`)
-5. Add a link to the new weekly note in the quarterly's "Weeks" section
+### ":help"
+When the user says ":help":
+Show all available custom commands:
+- `:help` - Show all available commands
+- `:tasks` - Show today's remaining tasks
+- `:start this week` - Create a new weekly note and link it to the quarterly note
+- `:start today` - Plan today's tasks by reviewing incomplete items and asking planning questions
+- `:wrap up today` - Summarize today's GitHub activities and reflect on the day
+- `:wrap up this week` - Summarize the week's GitHub activities, create next week's note, and migrate incomplete tasks
 
-### "start today"
-When the user says "start today":
-1. Find the current week's note file
-2. Scan all previous days in the week (up to yesterday) for incomplete tasks (unchecked `- [ ]` items)
-3. Also check the backlog section for incomplete tasks
-4. Present each incomplete task to the user one by one, asking: "Do you want to tackle '[task]' today?"
-5. For each "yes" response, add the task to today's section
-6. After reviewing incomplete tasks, ask interactive questions to help plan the day:
-   - "What's your most important priority today?"
-   - "Do you have any meetings or appointments? What preparation is needed?"
-   - "What would make today feel successful?"
-   - "Any urgent items that came up overnight?"
-7. Add responses as tasks in today's section
-8. Skip tasks the user says "no" to
+### ":tasks"
+When the user says ":tasks":
+1. Run `./date-utils.sh current-week` to get the current week
+2. Run `./date-utils.sh today-date` to get today's date
+3. Find the current week's note file
+4. Identify today's section based on the current date
+5. Show all incomplete tasks (unchecked `- [ ]` items) from today's section
+6. Also show completed tasks (checked `- [x]` items) from today for context
 
-### "wrap up today"
-When the user says "wrap up today":
+### ":start this week"
+When the user says ":start this week":
+
+### ":start today"
+When the user says ":start today":
+1. Run `./date-utils.sh current-week` and `./date-utils.sh today-date` to get current week and date
+2. Read the current week's note file
+3. Identify incomplete tasks from today's section and earlier in the week
+4. Analyze the context and ask relevant, context-aware planning questions one by one (not all at once):
+   
+   **Context Analysis Guidelines:**
+   - Review incomplete tasks from previous days and identify blockers or dependencies
+   - Check for open PRs that need follow-up or reviews
+   - Look for tasks marked as "waiting for X" to follow up on
+   - Consider day of the week (Friday = wrap-up considerations, Monday = week planning)
+   - Reference yesterday's priorities and planning notes
+   - Check for urgent items or deadlines mentioned in recent notes
+   - Review performance feedback areas that haven't been addressed recently
+   
+   **Example Context-Aware Questions:**
+   - "PR #22744 is still incomplete from yesterday - what's blocking its completion?"
+   - "You mentioned waiting for Alex's review on the backfill task - any updates?"
+   - "It's Friday - should we plan any end-of-week cleanup or preparation for next week?"
+   - "The TypeScript upgrade has been in the backlog for weeks - is this a good time to tackle it?"
+   - "You haven't worked on UI expertise sharing lately (from your performance feedback) - any opportunities today?"
+   
+5. Wait for user responses to each question before proceeding
+6. Help plan and organize today's tasks based on their answers and the identified context
+
+### ":wrap up today"
+When the user says ":wrap up today":
 1. Run the `./github-activity.sh 2>&1` script to fetch today's GitHub activities
-2. Summarize the GitHub activities and add them to the "### Summary" section under today's date in the weekly note
-3. Ask reflective questions to help plan tomorrow **one by one interactively**:
-   - "What went well today?"
-   - "What didn't go as planned?"
-   - "What should you prioritize tomorrow?"
-   - "Any blockers or dependencies for tomorrow?"
-   - "What preparation is needed for tomorrow's meetings/tasks?"
-4. Add responses as tasks or notes for tomorrow or the backlog
+2. Read the current week's note file and identify today's section
+3. Analyze the context and ask relevant reflection questions based on what actually happened:
+   
+   **Context Analysis Guidelines:**
+   - Compare planned tasks vs. completed tasks
+   - Identify any blockers or unexpected issues that came up
+   - Check if any PRs need follow-up or are waiting for reviews
+   - Look for dependencies on other people that should be tracked
+   - Consider what preparation might be needed for tomorrow
+   - Reference performance feedback goals when relevant
+   
+   **Example Context-Aware Questions:**
+   - "You planned to finish PR #22744 but it's still open - what prevented completion?"
+   - "Three PRs got merged today - do any need follow-up work or monitoring?"
+   - "You mentioned waiting for Alex yesterday and didn't follow up - should we add that to tomorrow?"
+   - "The chart comparison task was completed - did you find any issues that need addressing?"
+   - "It's Thursday - any preparation needed for tomorrow's end-of-week tasks?"
+   
+4. Update today's summary section with GitHub activities and reflection notes
+5. Help identify priorities and blockers for tomorrow based on the discussion
 
-### "wrap up this week"
-When the user says "wrap up this week":
+### ":wrap up this week"
+When the user says ":wrap up this week":
 1. Run the `./github-activity-week.sh 2>&1` script to fetch this week's GitHub activities
 2. Find the current week's note file
 3. Scan all days in the week for incomplete tasks (unchecked `- [ ]` items)
 4. Also check the backlog section for incomplete tasks
-5. Summarize the GitHub activities and add them to the Summary section **including actual PR titles and links for team sharing** (do not group by day - use simple list format)
-6. Create a summary of the week's accomplishments and add it to the Summary section
-7. Create next week's note using the template from `.templates/weekly.md`
-8. Add all incomplete tasks to the backlog section of the new week's note
-9. Update the period dates in the new weekly file using: `./date-utils.sh next-week-range`
-10. Find the current quarterly note and add a link to the new weekly note
+5. Analyze the week's context and ask relevant reflection questions:
+   
+   **Context Analysis Guidelines:**
+   - Review the week's planned vs. actual accomplishments
+   - Identify patterns in blockers or recurring issues
+   - Check for PRs or tasks that consistently got postponed
+   - Look for dependencies on others that need follow-up
+   - Consider performance feedback areas that were or weren't addressed
+   - Assess if any incomplete tasks are no longer relevant
+   
+   **Example Context-Aware Questions:**
+   - "The RoutingFormResponseDenormalized backfill has been pending all week - should we escalate this?"
+   - "You created 12 PRs this week but TypeScript upgrade keeps getting postponed - is it still a priority?"
+   - "Several tasks mention 'waiting for review' - should we follow up on any of these?"
+   - "You haven't worked on UI expertise sharing this week (performance feedback) - plan for next week?"
+   - "Some backlog items have been there for weeks - should we archive any that are no longer relevant?"
+   
+6. Summarize the GitHub activities and add them to the Summary section **including actual PR titles and links for team sharing** (do not group by day - use simple list format)
+7. Create a summary of the week's accomplishments and add it to the Summary section
+8. Create next week's note using the template from `.templates/weekly.md`
+9. Add all incomplete tasks to the backlog section of the new week's note, but intelligently prioritize based on the context analysis
+10. Update the period dates in the new weekly file using: `./date-utils.sh next-week-range`
+11. Find the current quarterly note and add a link to the new weekly note
 
 ## Performance Review Integration
 
 The `reviews/` folder contains performance feedback that should guide daily and weekly planning:
 
-- **During "start today"**: Occasionally suggest tasks that align with feedback areas for improvement
-- **During "wrap up today"**: When relevant, connect completed work to feedback goals
+- **During ":start today"**: Occasionally suggest tasks that align with feedback areas for improvement
+- **During ":wrap up today"**: When relevant, connect completed work to feedback goals
 - **During weekly planning**: Proactively suggest focusing on feedback areas that haven't been addressed recently
 - **General guidance**: Reference feedback when user asks for career advice or improvement suggestions

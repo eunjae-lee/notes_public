@@ -22,7 +22,7 @@ gh api "search/issues?q=commenter:$USERNAME+created:$TODAY+org:calcom" --jq '.it
 echo ""
 
 echo "👀 Reviews Made Today:"
-gh api "search/issues?q=reviewed-by:$USERNAME+updated:$TODAY+type:pr+org:calcom" --jq '.items[] | "• " + .title + " (" + (.repository_url | split("/") | .[-1]) + ") - " + .html_url'
+gh api "search/issues?q=reviewed-by:$USERNAME+updated:$TODAY+type:pr+org:calcom+-author:$USERNAME" --jq '.items[] | "• " + .title + " (" + (.repository_url | split("/") | .[-1]) + ") - " + .html_url'
 echo ""
 
 echo "🔄 My Issues/PRs With Activity Today:"
